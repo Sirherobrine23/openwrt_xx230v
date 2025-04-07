@@ -266,6 +266,16 @@ define Build/cfe-wfi-tag
 	mv $@.new $@
 endef
 
+# Make image to Pace v5471
+define Build/pace_updatefw
+  $(STAGING_DIR_HOST)/bin/pace_updatefw -n \
+    -u $(STOCK_IMAGE_PATH) \
+    -k $(call param_get_default,kernel,$(1),$(IMAGE_KERNEL)) \
+    -s $(call param_get_default,rootfs,$(1),$(IMAGE_ROOTFS)) \
+    -o $@.new
+  @mv $@.new $@
+endef
+
 ### Device scripts ###
 define Device/Default
   PROFILES = Default $$(DEVICE_NAME)
@@ -342,6 +352,19 @@ define Device/bcm63xx-nand
   CFE_WFI_FLAGS :=
   UBINIZE_OPTS := -E 5
   DEVICE_PACKAGES += nand-utils
+endef
+
+define Device/pace_dev
+  SQUASHFSCOMP := gzip
+  FILESYSTEMS := squashfs
+  KERNEL := kernel-bin | append-dtb | relocate-kernel | lzma
+  KERNEL_INITRAMFS := kernel-bin | append-dtb | lzma | loader-lzma elf
+  KERNEL_INITRAMFS_SUFFIX := .elf
+  
+  IMAGES := sysupgrade.bin bewan_boot.bin
+  IMAGE/sysupgrade.bin := cfe-bin | append-metadata
+  IMAGE/bewan_boot.bin := append-kernel | pad-to $$$$(KERNEL_SIZE) | pace_updatefw
+  KERNEL_SIZE := 5120k
 endef
 
 define Device/bcm63xx-netgear

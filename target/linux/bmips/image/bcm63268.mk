@@ -57,6 +57,61 @@ define Device/comtrend_vr-3032u
 endef
 TARGET_DEVICES += comtrend_vr-3032u
 
+# Entering multicast mode
+# Downloading firmware for platform B14103, length 13889536
+# ........................................................................................................................................
+# Upload done
+# Booting romless:
+# F/W is valid
+#   Copyright (c) 2006-2010 BeWAN Systems
+#   V5471 iBoxNG GVT
+#   B14103
+#   2015-03-04-15:55:18
+#   B14103-GVT-RC2-98509.bin
+#   Root FS in RAM
+#
+# Saving linux command line before uncompression
+#
+# Loading linux kernel image
+#
+# Load address = 80010000
+# Uncompressing Linux.............................................
+# Flushing cache...
+# done, booting the kernel.
+# start addr = 80483fd0
+#
+# Stock image file
+# DECIMAL                            HEXADECIMAL                        DESCRIPTION
+# ---------------------------------------------------------------------------------------------------------------------------------------
+# 0                                  0x0                                Copyright text: "Copyright (c) 2006-2010 BeWAN Systems"
+# 13056                              0x3300                             LZMA compressed data, properties: 0x5D, dictionary size: 2097152 bytes, compressed size: 2122336 bytes, uncompressed size: 6973488 bytes
+# 2138112                            0x20A000                           SquashFS file system, little endian, version: 4.0, compression: gzip, inode count: 1916, block size: 65536, image size: 12673257 bytes, created: 2017-07-12 00:06:42
+#
+# 0x3300
+# DECIMAL                            HEXADECIMAL                        DESCRIPTION
+# ---------------------------------------------------------------------------------------------------------------------------------------
+# 2532624                            0x26A510                           eCos kernel exception handler, MIPS big endian
+# 4710416                            0x47E010                           Linux version 2.6.30 (devbuild@lxc-lxc_gvt_dsl_rc2) (gcc version 4.4.2 (Buildroot 2010.02-git) ) #2 SMP PREEMPT Tue May 9 10:15:10 UTC 2017, has symbol table: false
+# 4818560                            0x498680                           CRC32 polynomial table, little endian
+# 4834692                            0x49C584                           CRC32 polynomial table, big endian
+define Device/pace_v5471
+  $(Device/pace_dev)
+  DEVICE_VENDOR := Pace
+  DEVICE_MODEL := V5471
+  CHIP_ID := 63268
+  SOC := bcm63168
+
+  IMAGE_OFFSET := 0
+  FLASH_MB := 128
+  CFE_BOARD_ID := B14103
+
+  DEVICE_LOADADDR := $(KERNEL_LOADADDR)
+  DEVICE_PACKAGES += $(USB2_PACKAGES) \
+    kmod-leds-gpio
+  STOCK_IMAGE_PATH := $(KERNEL_BUILD_DIR)/pace_updatefw/pace_v5471_42007.bin
+endef
+TARGET_DEVICES += pace_v5471
+
 define Device/sagem_fast-3864-op
   $(Device/bcm63xx-nand)
   DEVICE_VENDOR := Sagemcom
