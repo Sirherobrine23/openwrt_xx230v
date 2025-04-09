@@ -101,10 +101,6 @@ define Device/pace_v5471
   CHIP_ID := 63268
   SOC := bcm63168
 
-  IMAGE_OFFSET := 0
-  FLASH_MB := 128
-  CFE_BOARD_ID := B14103
-
   DEVICE_LOADADDR := $(KERNEL_LOADADDR)
   DEVICE_PACKAGES += $(USB2_PACKAGES) \
     kmod-leds-gpio
