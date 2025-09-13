@@ -1,0 +1,326 @@
+// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
+
+/dts-v1/;
+
+/* Bootloader installs ATF here */
+/memreserve/ 0x80000000 0x200000;
+
+#include <dt-bindings/leds/common.h>
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+#include "en7523.dtsi"
+
+/ {
+	model = "TP-Link xx230v";
+	compatible = "tplink,xx230v", "airoha,en7523";
+
+	chosen {
+		bootargs = "console=ttyS0,115200 earlycon";
+		stdout-path = "serial0:115200n8";
+	};
+
+	aliases {
+		serial0 = &uart1;
+		led-boot = &led_power;
+		led-failsafe = &led_power;
+		led-upgrade = &led_power;
+		led-running = &led_power;
+	};
+
+	keys {
+		compatible = "gpio-keys";
+		reset_button {
+			label = "Reset";
+			linux,code = <KEY_RESTART>;
+			gpios = <&gpio0 0 GPIO_ACTIVE_LOW>;
+		};
+
+		wps_button {
+			label = "WPS";
+			linux,code = <KEY_WPS_BUTTON>;
+			gpios = <&gpio0 7 GPIO_ACTIVE_LOW>;
+		};
+	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		led_power: power {
+			label = "green:power";
+			color = <LED_COLOR_ID_GREEN>;
+			function = LED_FUNCTION_STATUS;
+			gpios = <&gpio0 11 GPIO_ACTIVE_LOW>;
+		};
+
+		xpon {
+			label = "green:xpon";
+			color = <LED_COLOR_ID_GREEN>;
+			function = LED_FUNCTION_STATUS;
+			gpios = <&gpio0 10 GPIO_ACTIVE_LOW>;
+		};
+
+		los {
+			label = "red:los";
+			color = <LED_COLOR_ID_RED>;
+			function = LED_FUNCTION_STATUS;
+			gpios = <&gpio0 3 GPIO_ACTIVE_HIGH>;
+		};
+
+		internet {
+			label = "green:internet";
+			color = <LED_COLOR_ID_GREEN>;
+			function = LED_FUNCTION_STATUS;
+			gpios = <&gpio0 1 GPIO_ACTIVE_LOW>;
+		};
+
+		wifi {
+			label = "green:wifi";
+			color = <LED_COLOR_ID_GREEN>;
+			function = LED_FUNCTION_STATUS;
+			gpios = <&gpio0 6 GPIO_ACTIVE_LOW>;
+		};
+
+		phone1 {
+			label = "green:fxs1";
+			color = <LED_COLOR_ID_GREEN>;
+			function = LED_FUNCTION_STATUS;
+			gpios = <&gpio0 5 GPIO_ACTIVE_HIGH>;
+		};
+
+		lan1 {
+			label = "green:lan1";
+			color = <LED_COLOR_ID_GREEN>;
+			gpios = <&gpio0 22 GPIO_ACTIVE_LOW>;
+		};
+
+		lan2 {
+			label = "green:lan2";
+			color = <LED_COLOR_ID_GREEN>;
+			gpios = <&gpio0 23 GPIO_ACTIVE_LOW>;
+		};
+
+		lan3 {
+			label = "green:lan3";
+			color = <LED_COLOR_ID_GREEN>;
+			gpios = <&gpio0 24 GPIO_ACTIVE_LOW>;
+		};
+
+		lan4 {
+			label = "green:lan4";
+			color = <LED_COLOR_ID_GREEN>;
+			gpios = <&gpio0 25 GPIO_ACTIVE_LOW>;
+		};
+	};
+
+	watchdog@1fbf0100 {
+		compatible = "airoha,en7581-wdt";
+		reg = <0x1fbf0100 0x38>;
+
+		clocks = <&scu EN7523_CLK_BUS>;
+		clock-names = "bus";
+	};
+
+	npu@1e900000 {
+		compatible = "airoha,en7581-npu";
+		reg = <0x0 0x1e900000 0x0 0x313000>;
+		memory-region = <&npu_binary>;
+		memory-region-names = "binary";
+		status = "okay";
+		interrupts = <GIC_SPI 125 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 103 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 109 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 113 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 117 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 134 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 135 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 136 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 137 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 118 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 119 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 120 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 121 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 122 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 123 IRQ_TYPE_LEVEL_HIGH>;
+	};
+};
+
+&gpio0 {
+	status = "okay";
+
+	// gpio-ranges = <&gpio0 0 0 64>;
+	// gpio-ranges = <&gpio0 0 13 47>;
+};
+
+&nand {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		partition@0 {
+			label = "boot";
+			reg = <0x00000000 0x00080000>;
+			read-only;
+
+			nvmem-layout@0 {
+				compatible = "ascii-eq-delim-env";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x000729bb 0x00020000>;
+
+				lan_mac: lan_mac {
+					compatible = "mac-base";
+					reg = <0x000729bb 0x0000000C>;
+				};
+
+				wan_mac: wan_mac {
+					compatible = "mac-base";
+					reg = <0x000729e3 0x0000000C>;
+				};
+			};
+		};
+		partition@80000 {
+			label = "romfile";
+			reg = <0x00080000 0x00020000>;
+			read-only;
+		};
+		partition@a0000 {
+			label = "misc";
+			reg = <0x000a0000 0x00100000>;
+			read-only;
+			// eeprom_factory_0: eeprom@0 {
+			// 	reg = <0x0 0x4da8>;
+			// };
+
+			// macaddr_factory_e000: macaddr@e000 {
+			// 	compatible = "mac-base";
+			// 	reg = <0xe000 0x6>;
+			// 	#nvmem-cell-cells = <1>;
+			// };
+		};
+		partition@1a0000 {
+			label = "firmware";
+			reg = <0x001a0000 0x01e60000>;
+			read-only;
+		};
+		partition@2000000 {
+			label = "firmware_slave";
+			reg = <0x02000000 0x01e60000>;
+			read-only;
+		};
+		partition@3fe0000 {
+			label = "reserve";
+			reg = <0x03fe0000 0x00020000>;
+			read-only;
+		};
+		partition@8000000 {
+			label = "nandspi";
+			reg = <0x00000000 0x8000000>;
+			read-only;
+		};
+	};
+};
+
+&pcie0 {
+	status = "okay";
+
+	wifi@0,0 {
+		compatible = "mediatek,mt76";
+		reg = <0x0000 0 0 0 0>;
+		// airoha,eth = <&eth>;
+		// airoha,npu = <&npu>;
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		band@0 {
+			reg = <0>;
+			nvmem-cells = <&wan_mac 1>;
+			nvmem-cell-names = "mac-address";
+		};
+
+		band@1 {
+			reg = <1>;
+			nvmem-cells = <&wan_mac 2>;
+			nvmem-cell-names = "mac-address";
+		};
+	};
+};
+
+&pcie1 {
+	status = "okay";
+
+	wifi@1,0 {
+		compatible = "mediatek,mt76";
+		regs = <0x0000 0 0 0 0>;
+		// airoha,eth = <&eth>;
+		// airoha,npu = <&npu>;
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		band@0 {
+			reg = <0>;
+			nvmem-cells = <&wan_mac 1>;
+			nvmem-cell-names = "mac-address";
+		};
+
+		band@1 {
+			reg = <1>;
+			nvmem-cells = <&wan_mac 2>;
+			nvmem-cell-names = "mac-address";
+		};
+	};
+};
+
+// &npu {
+// 	status = "okay";
+// };
+
+// &eth {
+// 	status = "okay";
+// };
+
+// &gdm1 {
+// 	status = "okay";
+
+// 	nvmem-cells = <&lan_mac 0>;
+// 	nvmem-cell-names = "mac-address";
+// };
+
+// &switch {
+// 	status = "okay";
+
+// 	pinctrl-names = "default";
+// 	pinctrl-0 = <&mdio_pins>;
+
+// 	mdio {
+// 		phy5: ethernet-phy@5 {
+// 			compatible = "ethernet-phy-ieee802.3-c45";
+// 			reg = <5>;
+// 			reset-gpios = <&gpio0 14 GPIO_ACTIVE_LOW>;
+// 		};
+
+// 		phy8: ethernet-phy@8 {
+// 			compatible = "ethernet-phy-ieee802.3-c45";
+// 			reg = <8>;
+// 			reset-gpios = <&gpio0 31 GPIO_ACTIVE_LOW>;
+// 		};
+// 	};
+// };
+
+// &gsw_phy1 {
+// 	status = "okay";
+// };
+
+// &gsw_phy2 {
+// 	status = "okay";
+// };
+
+// &gsw_port3 {
+// 	status = "okay";
+// };
+
+// &gsw_port4 {
+// 	status = "okay";
+// };

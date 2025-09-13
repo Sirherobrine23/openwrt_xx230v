@@ -1,0 +1,34 @@
+--- a/drivers/pinctrl/mediatek/Kconfig
++++ b/drivers/pinctrl/mediatek/Kconfig
+@@ -129,7 +129,7 @@ config PINCTRL_MT8127
+ config PINCTRL_AIROHA
+-	tristate "Airoha EN7581 pin control"
++	tristate "Airoha pin control"
+ 	depends on OF
+-	depends on ARM64 || COMPILE_TEST
++	depends on ARCH_AIROHA || COMPILE_TEST
+ 	select PINMUX
+ 	select GENERIC_PINCONF
+ 	select GENERIC_PINCTRL_GROUPS
+--- a/drivers/phy/mediatek/Kconfig
++++ b/drivers/phy/mediatek/Kconfig
+@@ -26,7 +26,7 @@ config PHY_MTK_XFI_TPHY
+
+ config PHY_MTK_TPHY
+ 	tristate "MediaTek T-PHY Driver"
+-	depends on ARCH_MEDIATEK || COMPILE_TEST
++	depends on ARCH_MEDIATEK || ARCH_AIROHA || COMPILE_TEST
+ 	depends on OF && OF_ADDRESS
+ 	depends on HAS_IOMEM
+ 	select GENERIC_PHY
+--- a/drivers/usb/host/Kconfig
++++ b/drivers/usb/host/Kconfig
+@@ -71,7 +71,7 @@ config USB_XHCI_HISTB
+ config USB_XHCI_MTK
+ 	tristate "xHCI support for MediaTek SoCs"
+ 	select MFD_SYSCON
+-	depends on (MIPS && SOC_MT7621) || ARCH_MEDIATEK || COMPILE_TEST
++	depends on (MIPS && SOC_MT7621) || ARCH_AIROHA || ARCH_MEDIATEK || COMPILE_TEST
+ 	help
+ 	  Say 'Y' to enable the support for the xHCI host controller
+ 	  found in MediaTek SoCs.

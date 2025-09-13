@@ -15,7 +15,7 @@
 		#size-cells = <1>;
 		ranges;
 
-		npu_binary@84000000 {
+		npu_binary: npu_binary@84000000 {
 			no-map;
 			reg = <0x84000000 0xA00000>;
 		};
